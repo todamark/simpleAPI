@@ -1,0 +1,7 @@
+[EMAIL]
+	email_address = asdf@asdf.com
+	email_password = password
+	smtp_server = imap.gmail.com # or whatever SMTP server
+	smtp_port = 993 # Or whatever SMTP port
+	subject_identifier = 'iot' # this must be the subject of every email that you want to be taken as an API call
+	verified_emails = asdf@asdf.com,ddd@ddd.com # only emails from these addresses will be taken as API calls

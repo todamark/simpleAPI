@@ -1,0 +1,6 @@
+{"api_name":"lights", 
+	"on":{},
+	"change_color":{"required": ["color"]},
+	"dim":{"optional":["amount"]},
+	"off":{}
+}
