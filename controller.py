@@ -38,10 +38,7 @@ class Controller:
 	def start(self):
 		while True:
 			pass
-
-	def stop(self):
-		sys.exit(1)
-
+			
 	def update_emails_looper(self, refresh_rate_s):
 		while True:
 			try:
