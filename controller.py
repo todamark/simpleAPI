@@ -4,15 +4,16 @@
 
 from simpleAPI.emailClient import EmailClient
 from simpleAPI.apiParser import ApiParser
+from simpleAPI.apiHandler import ApiHandler
 from threading import Thread
 from queue import Queue
 from time import sleep
 import configparser
 import sys
 
-class Api:
-	REFRESH_RATE_S = 0.1
-	registered_callbacks = {}
+class Controller:
+	auto_running = False
+
 	def __init__(self, api_dir = './apis', config_file = './config'):
 		self.config_file = config_file
 		self.email = EmailClient(config_file)
@@ -21,20 +22,35 @@ class Api:
 			self.api.load_apis_from_directory(api_dir)
 		self.queues = {}
 		self.verified_senders = []
+		self.register_all_apis()
+		self.register_verified_senders()
+		self.auto()
 
-	def auto(self, make_callbacks = True):
-		self.email_thread = Thread(target=self.update_emails_looper, args = {self.REFRESH_RATE_S, make_callbacks}, daemon=True)
+	def auto(self, refresh_rate_s = 0.1):
+		if self.auto_running:
+			return
+		else:
+			self.auto_running = True
+		self.email_thread = Thread(target=self.update_emails_looper, args = {refresh_rate_s}, daemon=True)
 		self.email_thread.start()
 
-	def update_emails_looper(self, refresh_rate_s, make_callbacks):
+	# Just keeps the main thread alive so the daemons can do their work
+	def start(self):
+		while True:
+			pass
+
+	def stop(self):
+		sys.exit(1)
+
+	def update_emails_looper(self, refresh_rate_s):
 		while True:
 			try:
-				self.update_emails(make_callbacks)
+				self.update_emails()
 				sleep(refresh_rate_s)
 			except (KeyboardInterrupt, SystemExit):
 				sys.exit(1)
 
-	def update_emails(self, make_callbacks):
+	def update_emails(self):
 		try:
 			emails = self.email.get_emails()
 			for email in emails:
@@ -46,27 +62,16 @@ class Api:
 					print("Error: " + parsed_call['error'])
 					continue
 				api_name = parsed_call['api_name']
-				if make_callbacks:
-					self.make_callback(api_name, parsed_call)
-				else:
-					if api_name not in self.queues:
-						self.queues[api_name] = Queue()
-					self.queues[api_name].put(parsed_call)
+				if api_name not in self.queues:
+					self.queues[api_name] = Queue()
+				self.queues[api_name].put(parsed_call)
 		except (KeyboardInterrupt, SystemExit):
 			sys.exit(1)
 
-	def make_callback(self, api_call, parsed_call):
-		if api_name not in self.registered_callbacks:
-			raise Exception('No callback registered for ' + str(api_name))
-		elif 'function_name' not in parsed_call:
-			raise Exception('No function name defined in call')
-		elif parsed_call['function_name'] not in registered_callbacks[api_name]:
-			raise Exception('Function name ' + str(parsed_call['function_name']) + 'not registered')
-		elif 'options' not in parsed_call:
-			raise Exception('No options declared in call')
-		else:
-			func = mapping[parsed_call['function_name']]
-			func(**parsed_call['options'])
+	def get_api_handler(self, api_name):
+		if api_name not in self.queues:
+			raise Exception('Unkonwn api name: ' + str(api_name))
+		return ApiHandler(self, api_name)
 
 	# Returns api calls from the queue, in the order they came
 	# Returns only one api call, and blocks until one comes in if there are none currently or None if the api isn't known
@@ -81,7 +86,6 @@ class Api:
 	def register_api(self, api_name):
 		if api_name not in self.queues:
 			self.queues[api_name] = Queue()
-			self.registered_callbacks[api_name] = {}
 
 	def register_all_apis(self):
 		for api in self.api.get_apis():
@@ -100,8 +104,3 @@ class Api:
 
 	def check_verified_sender(self, sender):
 		return sender in self.verified_senders
-
-	def register_callback(self, api_name, function_name, callback):
-		if api_name not in self.registered_callbacks:
-			raise Exception('unregistered api: ' + str(api_name))
-		self.registered_callbacks[api_name][function_name] = callback
