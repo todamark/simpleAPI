@@ -43,6 +43,7 @@ class EmailClient:
 		self.mail = imaplib.IMAP4_SSL(self.smtp_server)
 		self.mail.login(self.email_address, self.email_password)
 
+
 	# Gets all unread emails from mailbox, and returns all that match the following criteria:
 	#	- unread
 	#	- subject line equals subject_identifier (by default, 'iot')
@@ -50,7 +51,7 @@ class EmailClient:
 	# 	sender: the message sender (asdf@gmail.com)
 	#	body: The body data in the email
 	def get_emails(self):
-		self.mail.select('inbox')	
+		self.mail.select('inbox')
 		result = []
 		unseen_parameter = 'UNSEEN' if ONLY_UNREAD else None
 		_, data = self.mail.search(None, 'SUBJECT', self.subject_identifier, unseen_parameter)
