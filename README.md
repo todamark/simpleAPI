@@ -40,7 +40,7 @@ Emails must be formatted in the following way:
 		optionx=value
 Note that the body is composed of items with a new line separating each one. 
 
-## Return Format
+## Manual Access
 controller.get_api_call(api_name) will return API calls to the requested api name in the order that they were received by the email address. If there is no new calls to this api, this function will block until there is one to get. These will come in the following python dict format:
 
 	{
@@ -49,35 +49,53 @@ controller.get_api_call(api_name) will return API calls to the requested api nam
 		"options": { "option1": "value" }
 	}
 
+## Api class
+The controller class is the main way to set up your API server. Its functions are the following:
+`Api(api_dir, config_file)`: the two parameters to the constructors are paths to the configuration files, by default api_dir = './apis' and config_file = './config'
+`start()`: Once everything is configured, call this to keep the server running. Can be stopped by Keyboard Interrupt
+`get_api_handler(api_name)`: Returns an ApiHandler which can be used to register callbacks to api functions
+`get_api_call(api_name)`: Low level call to directly access api calls. Do not use in conjunction with an api handler for a given API. See documentation above
+
+## ApiHandler Class
+The easiest way to interact with your API is through registered callbacks in the ApiHandler class. To get an ApiHandler, call `get_api_handler(api_name)` on your configured controller object. This will return an object on which you can register API functions to callback functions, as seen in the example code snippet below. Once registered, the ApiHandler will automatically call your callback any time a registered api function is called. The only functions of this class are the following:
+`register_callback(function_name, callback)`: Will call "callback" any time "function_name" is called through the api
+`register_callbacks(mapping)`: takes a dict of function_names to callbacks, and bulk registers them
+
 ## Example code
 ```python
-	from simpleIOT import controller
+from simpleAPI import api
 
-	def on():
-		print("TURNED THE LIGHTS ON")
+def on():
+	print("TURNED THE LIGHTS ON")
 
-	def off():
-		print("TURNED THE LIGHTS OFF")
+def off():
+	print("TURNED THE LIGHTS OFF")
 
-	def change_color(color):
-		print("CHANGED THE LIGHTS TO " + str(color))
+def change_color(color):
+	print("CHANGED THE LIGHTS TO " + str(color))
 
-	def dim(amount=10):
-		print("DIMMED THE LIGHTS BY " + str(amount) + " PERCENT")
+def dim(amount=10):
+	print("DIMMED THE LIGHTS BY " + str(amount) + " PERCENT")
 
-	mapping = {
-		"on": on,
-		"off": off,
-		"change_color": change_color,
-		"dim": dim
-	}
+mapping = {
+	"on": on,
+	"off": off,
+	"change_color": change_color,
+	"dim": dim
+}
 
-	controller = controller.Controller(api_dir = './apis', config_file = './config')
-	controller.register_verified_senders()
-	controller.register_all_apis()
-	controller.auto()
-	while True:
-		request = controller.get_api_call('lights')
-		func = mapping[request['function_name']]
-		func(**request['options'])
+api = api.Api(api_dir = './apis', config_file = './config')
+lights_handler = api.get_api_handler('lights')
+lights_handler.register_callbacks(mapping)
+api.start() # Keeps the main thread running so emails will continue being processed
+```
+
+./apis/lights_api.json
+```
+{"api_name":"lights", 
+	"on":{},
+	"change_color":{"required": ["color"]},
+	"dim":{"optional":["amount"]},
+	"off":{}
+}
 ```
