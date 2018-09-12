@@ -11,7 +11,7 @@ from time import sleep
 import configparser
 import sys
 
-class Controller:
+class Api:
 	auto_running = False
 
 	def __init__(self, api_dir = './apis', config_file = './config'):

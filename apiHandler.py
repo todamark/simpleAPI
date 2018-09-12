@@ -1,4 +1,3 @@
-# from simpleAPI.controller import Controller
 from threading import Thread
 
 class ApiHandler:
