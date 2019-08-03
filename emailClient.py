@@ -74,4 +74,4 @@ class EmailClient:
 		return result
 
 	def send_email(self, email, body):
-		self.smtp.sendmail(self.email_address, email, body)
+		self.smtp.sendmail(self.email_address, email, str(body))
