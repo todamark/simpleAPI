@@ -16,7 +16,7 @@ class ApiHandler:
 		while True:
 			request = self.controller.get_api_call(self.api_name)
 			function_name = request['function_name']
-			if not function_name: 
+			if not function_name:
 				print("Unknown function: " + str(function_name))
 				continue
 			func = self.registered_callbacks[function_name]
@@ -24,9 +24,8 @@ class ApiHandler:
 			t.start()
 
 	def callback_handler(self, func, sender, kwargs):
-            result = func(**kwargs)
-            print("Sending response: " + response)
-            self.controller.return_api_response(result, sender)
+		result = func(**kwargs)
+		self.controller.return_api_response(result, sender)
 
 	def register_callback(self, function_name, callback):
 		self.registered_callbacks[function_name] = callback
