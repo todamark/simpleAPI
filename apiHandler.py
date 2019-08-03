@@ -1,5 +1,6 @@
 from threading import Thread
 
+
 class ApiHandler:
 	registered_callbacks = {}
 
@@ -25,6 +26,7 @@ class ApiHandler:
 
 	def callback_handler(self, func, sender, kwargs):
 		result = func(**kwargs)
+		print(f"Returning api call to {sender} with response {result}")
 		self.controller.return_api_response(result, sender)
 
 	def register_callback(self, function_name, callback):
