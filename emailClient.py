@@ -43,7 +43,7 @@ class EmailClient:
 		#--------------------------------#
 		self.mail = imaplib.IMAP4_SSL(self.smtp_server)
 		self.mail.login(self.email_address, self.email_password)
-		self.smtp = smtplib.SMTP_SSL(self.smtp_server, self.smtp_port)
+		self.smtp = smtplib.SMTP_SSL(self.smtp_server)
 		self.smtp.login(self.email_address, self.email_password)
 
 
