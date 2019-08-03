@@ -73,5 +73,6 @@ class EmailClient:
 					result.append(email_dict)
 		return result
 
-	def send_email(self, email, body):
-		self.smtp.sendmail(self.email_address, email, str(body))
+	def send_email(self, email, subject, body):
+		message = f'Subject: {subject}\n\n{str(body)}'
+		self.smtp.sendmail(self.email_address, email, message)

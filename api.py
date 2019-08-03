@@ -81,8 +81,8 @@ class Api:
 		except (KeyboardInterrupt, SystemExit):
 			sys.exit(1)
 
-	def return_api_response(self, response, email):
-		self.email.send_email(email, response)
+	def return_api_response(self, response, function_name, email):
+		self.email.send_email(email, function_name, response)
 
 	def register_api(self, api_name):
 		if api_name not in self.queues:
