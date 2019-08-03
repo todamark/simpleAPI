@@ -20,12 +20,13 @@ class ApiHandler:
 				print("Unknown function: " + str(function_name))
 				continue
 			func = self.registered_callbacks[function_name]
-			t = Thread(target=self.callback_handler, args = (func, request['options']), daemon=True)
+			t = Thread(target=self.callback_handler, args = (func, request['sender'], request['options']), daemon=True)
 			t.start()
 
-	def callback_handler(self, func, kwargs):
+	def callback_handler(self, func, sender, kwargs):
             result = func(**kwargs)
-            print(result)
+            print("Sending response: " + response)
+            self.controller.return_api_response(result, sender)
 
 	def register_callback(self, function_name, callback):
 		self.registered_callbacks[function_name] = callback

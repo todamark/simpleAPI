@@ -12,6 +12,7 @@ putting your general email password in plain text
 from io import StringIO
 import configparser
 import imaplib
+import smtplib
 from email import message_from_string
 import re
 
@@ -42,6 +43,8 @@ class EmailClient:
 		#--------------------------------#
 		self.mail = imaplib.IMAP4_SSL(self.smtp_server)
 		self.mail.login(self.email_address, self.email_password)
+                self.smtp = smtplib.SMTP_SSL(self.smtp_server, self.smtp_port)
+                self.smtp.login(self.email_address, self.email_password)
 
 
 	# Gets all unread emails from mailbox, and returns all that match the following criteria:
@@ -70,4 +73,5 @@ class EmailClient:
 					result.append(email_dict)
 		return result
 
-	
+        def send_email(email, body):
+            self.smtp.sendmail(self.email_address, email, body)

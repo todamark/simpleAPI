@@ -53,8 +53,9 @@ class Api:
 			for email in emails:
 				if not self.check_verified_sender(email['sender']):
 					print("Unverified sender " + email['sender'])
-					continue
-				parsed_call = self.api.parse_email(email['body'])
+                                        continue
+                                parsed_call = self.api.parse_email(email['body'])
+                                parsed_call['sender'] = email['sender']
 				if 'api_name' not in parsed_call or 'error' in parsed_call:
 					print("Error: " + parsed_call['error'])
 					continue
@@ -79,6 +80,9 @@ class Api:
 			return self.queues[api_name].get(block = True)
 		except (KeyboardInterrupt, SystemExit):
 			sys.exit(1)
+
+        def return_api_response(response, email):
+            self.email.send_email(email, response)
 
 	def register_api(self, api_name):
 		if api_name not in self.queues:
